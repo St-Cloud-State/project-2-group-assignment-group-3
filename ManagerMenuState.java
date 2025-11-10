@@ -27,12 +27,12 @@ public final class ManagerMenuState implements State {
             }
 
             switch (choice) {
-                case 1 -> addProduct();
-                case 2 -> displayWaitlist();
-                case 3 -> receiveShipment();
-                case 4 -> becomeClerk();
-                case 5 -> { logout(); return; }
-                default -> System.out.println("Invalid choice.");
+                case 1 : addProduct(); break;
+                case 2 : displayWaitlist(); break;
+                case 3 : receiveShipment(); break;
+                case 4 : becomeClerk(); break;
+                case 5 :  logout(); return;  break;
+                default : System.out.println("Invalid choice."); break;
             }
         }
     }
