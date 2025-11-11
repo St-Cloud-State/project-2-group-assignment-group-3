@@ -1,13 +1,13 @@
 // Name: Carson Stallcup
 // Group: 3
-// File: ClientInterface.java
+// File: ClientMenuState.java
 // Purpose: Provides the client-side control panel for interacting with the Warehouse system.
 
 import java.io.*;
 import java.util.*;
 
-public class ClientInterface {
-    private static ClientInterface clientInterface;
+public class ClientMenuState {
+    private static ClientMenuState ClientMenuState;
     private BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     private static Warehouse warehouse;
     private Client currentClient;
@@ -21,15 +21,15 @@ public class ClientInterface {
     private static final int PLACE_ORDER = 6;
     private static final int LOGOUT = 0;
 
-    private ClientInterface(Client client) {
+    private ClientMenuState(Client client) {
         warehouse = Warehouse.instance();
         this.currentClient = client;
     }
 
-    public static ClientInterface instance(Client client) {
-        if (clientInterface == null)
-            clientInterface = new ClientInterface(client);
-        return clientInterface;
+    public static ClientMenuState instance(Client client) {
+        if (ClientMenuState == null)
+            ClientMenuState = new ClientMenuState(client);
+        return ClientMenuState;
     }
 
     public void run() {
