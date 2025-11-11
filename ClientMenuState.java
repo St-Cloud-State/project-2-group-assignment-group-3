@@ -6,7 +6,7 @@
 import java.io.*;
 import java.util.*;
 
-public class ClientMenuState {
+public class ClientMenuState extends state {
     private static ClientMenuState ClientMenuState;
     private BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     private static Warehouse warehouse;
