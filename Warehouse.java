@@ -224,4 +224,17 @@ public class Warehouse {
         Client client = this.searchClient(clientId);
         return client.getInvoices();
     }
+
+        public Iterator<Client> getClientsWithBalance() {
+        Iterator<Client> iterator = this.getClients();
+        ArrayList<Client> clientsWithBalance = new ArrayList<Client>();
+        while (iterator.hasNext()) {
+            Client curClient = iterator.next();
+            if (curClient.getBalance() < 0) {
+                clientsWithBalance.add(curClient);
+            }
+        }
+        return clientsWithBalance.iterator();
+    }
+    
 }
