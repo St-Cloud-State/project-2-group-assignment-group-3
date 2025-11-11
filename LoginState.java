@@ -1,6 +1,6 @@
 import java.util.Scanner;
 
-public final class LoginState implements State {
+public final class LoginState extends State {
     private static LoginState instance;
     private final Warehouse warehouse = Warehouse.instance();
     private final Scanner scanner = new Scanner(System.in);
