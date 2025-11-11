@@ -164,6 +164,7 @@ public class ClientMenuState extends State {
                 if (qty > 0) {
                     InvoiceItem invoiceItem = warehouse.order(item.getProductId(), qty, currentClient.getId());
                     invoice.addItem(invoiceItem);
+                    iterator.remove();
                 }
             } catch (IOException | NumberFormatException e) {
                 System.out.println("Invalid input, skipping item.");

@@ -230,7 +230,8 @@ public class Warehouse {
         ArrayList<Client> clientsWithBalance = new ArrayList<Client>();
         while (iterator.hasNext()) {
             Client curClient = iterator.next();
-            if (curClient.getBalance() < 0) {
+            if (curClient.getBalance() > 0) {
+                System.out.println("here");
                 clientsWithBalance.add(curClient);
             }
         }
