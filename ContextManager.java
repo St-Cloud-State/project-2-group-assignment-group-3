@@ -146,5 +146,5 @@ public class ContextManager {
 
     public static void main (String[] args){
         ContextManager.instance().process();
-      }
+    }
 }

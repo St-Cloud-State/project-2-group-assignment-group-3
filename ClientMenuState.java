@@ -21,18 +21,20 @@ public class ClientMenuState extends State {
     private static final int PLACE_ORDER = 6;
     private static final int LOGOUT = 0;
 
-    private ClientMenuState(Client client) {
+    private ClientMenuState() {
         warehouse = Warehouse.instance();
-        this.currentClient = client;
     }
 
-    public static ClientMenuState instance(Client client) {
+    public static ClientMenuState instance() {
         if (ClientMenuState == null)
-            ClientMenuState = new ClientMenuState(client);
+            ClientMenuState = new ClientMenuState();
         return ClientMenuState;
     }
 
     public void run() {
+        ContextManager  ctx = ContextManager.instance();
+        String currentClientId = ctx.getSession().userId();
+        currentClient = warehouse.searchClient(currentClientId);
         int command;
         System.out.println("\nWelcome, " + currentClient.getName() + "!");
         do {
@@ -52,6 +54,7 @@ public class ClientMenuState extends State {
                 default: System.out.println("Invalid choice.");
             }
         } while (command != LOGOUT);
+        ctx.handleLogout();
     }
 
     private void showMenu() {
