@@ -31,7 +31,7 @@ public final class ManagerMenuState extends State {
                 case 2 : displayWaitlist(); break;
                 case 3 : receiveShipment(); break;
                 case 4 : becomeClerk(); break;
-                case 5 :  logout(); return;  break;
+                case 5 :  logout(); return;  
                 default : System.out.println("Invalid choice."); break;
             }
         }
@@ -116,6 +116,8 @@ public final class ManagerMenuState extends State {
 
 
     private void becomeClerk() {
+        Session session = new Session(Enums.State.CLERK, "clerk");
+        ContextManager.instance().addSession(session);
         ContextManager.instance().changeState(Enums.Transition.TO_CLERK);
     }
 

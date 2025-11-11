@@ -9,7 +9,7 @@ record Session(Enums.State state, String userId) {}
 
 public class ContextManager {
     private static ContextManager context;
-    private static Enums.State currentState = Enums.State.CLERK;
+    private static Enums.State currentState = Enums.State.LOGIN;
     private final Deque<Session> sessionStack = new ArrayDeque<>();
     private BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     private static State[] states;
@@ -32,7 +32,7 @@ public class ContextManager {
 
     public void addSession(Session session) {
         this.sessionStack.push(session);
-        currentState = session.state();
+         //currentState = session.state();
     }
 
     public Session getSession() {
@@ -74,8 +74,11 @@ public class ContextManager {
     }
 
     public void changeState(Enums.Transition transition) {
+        System.out.println(sessionStack.size());
         final int curIdx = currentState.idx();
         final int code = transition.code();
+
+        System.out.println(code);
 
         if (code < 0) {
             handleExitCode(code);
@@ -83,11 +86,13 @@ public class ContextManager {
         }
 
         int result = nextState[curIdx][code];
-
+        System.out.println(result);
         if (result < 0) {
             handleExitCode(result);
             return;
         }
+
+
 
         currentState = Enums.State.values()[result];
         states[currentState.idx()].run();

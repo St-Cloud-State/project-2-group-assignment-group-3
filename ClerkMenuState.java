@@ -161,9 +161,10 @@ public class ClerkMenuState extends State {
     }
 
     public void terminate(Enums.Transition exitcode) {
+        System.out.println("Hello");
         switch(exitcode) {
             case TO_CLIENT:
-                context.process();
+                context.changeState(Enums.Transition.TO_CLIENT);
                 break;
             case CLEAN_EXIT:
                 context.handleLogout();
