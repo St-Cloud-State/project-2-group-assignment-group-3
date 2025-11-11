@@ -1,7 +1,7 @@
 import java.util.Iterator;
 import java.util.Scanner;
 
-public final class ManagerMenuState implements State {
+public final class ManagerMenuState extends State {
     private static ManagerMenuState instance;
     private final Scanner scanner = new Scanner(System.in);
     private final Warehouse warehouse = Warehouse.instance();
