@@ -16,9 +16,8 @@ public class ClientMenuState extends State {
     private static final int SHOW_DETAILS = 1;
     private static final int SHOW_PRODUCTS = 2;
     private static final int SHOW_TRANSACTIONS = 3;
-    private static final int ADD_TO_WISHLIST = 4;
-    private static final int SHOW_WISHLIST = 5;
-    private static final int PLACE_ORDER = 6;
+    private static final int WISHLIST_FUNCTIONALITIES = 4;
+    private static final int PLACE_ORDER = 5;
     private static final int LOGOUT = 0;
 
     private ClientMenuState() {
@@ -42,16 +41,31 @@ public class ClientMenuState extends State {
             command = getCommand();
             switch (command) {
                     //Options based on requirements.
-                case SHOW_DETAILS: showClientDetails(); break;
-                case SHOW_PRODUCTS: showProducts(); break;
-                case SHOW_TRANSACTIONS: showTransactions(); break;
-                case ADD_TO_WISHLIST: addToWishlist(); break;
-                case SHOW_WISHLIST: showWishlist(); break;
-                case PLACE_ORDER: placeOrder(); break;
-                case LOGOUT: System.out.println("Logging out..."); break;
+                case SHOW_DETAILS:
+                    showClientDetails();
+                    break;
+                case SHOW_PRODUCTS:
+                    showProducts();
+                    break;
+                case SHOW_TRANSACTIONS:
+                    showTransactions();
+                    break;
+                case WISHLIST_FUNCTIONALITIES:
+                    // Enter wishlist sub-state
+                    WishListFunctionSubState wishlistState =
+                            new WishListFunctionSubState(currentClient);
+                    wishlistState.run();
+                    break;
+                case PLACE_ORDER:
+                    placeOrder();
+                    break;
+                case LOGOUT:
+                    System.out.println("Logging out...");
+                    break;
 
                     //In case inputs aren't valid.
-                default: System.out.println("Invalid choice.");
+                default:
+                    System.out.println("Invalid choice.");
             }
         } while (command != LOGOUT);
         ctx.handleLogout();
@@ -62,8 +76,7 @@ public class ClientMenuState extends State {
         System.out.println(SHOW_DETAILS + " : Show My Details");
         System.out.println(SHOW_PRODUCTS + " : View Product List");
         System.out.println(SHOW_TRANSACTIONS + " : View Transactions");
-        System.out.println(ADD_TO_WISHLIST + " : Add Item to Wishlist");
-        System.out.println(SHOW_WISHLIST + " : View Wishlist");
+        System.out.println(WISHLIST_FUNCTIONALITIES + " : Wishlist Functionalities");
         System.out.println(PLACE_ORDER + " : Place an Order");
         System.out.println(LOGOUT + " : Logout");
     }
@@ -114,37 +127,6 @@ public class ClientMenuState extends State {
         }
     }
 
-    private void addToWishlist() {
-        try {
-            System.out.print("Enter product ID: ");
-            String productId = reader.readLine().trim();
-            System.out.print("Enter quantity: ");
-            int quantity = Integer.parseInt(reader.readLine());
-            Map<String, Object> response = warehouse.addToWishlist(productId, quantity, currentClient.getId());
-            if (response.get("status").equals("success")) {
-                System.out.println("Added to wishlist successfully.");
-            } else {
-                System.out.println("Failed to add: " + response.get("message"));
-            }
-        } catch (IOException | NumberFormatException e) {
-            System.out.println("Invalid input.");
-        }
-    }
-
-    private void showWishlist() {
-        Wishlist wishlist = warehouse.getWishlist(currentClient.getId());
-        if (wishlist == null || !wishlist.getItems().hasNext()) {
-            System.out.println("Wishlist is empty.");
-            return;
-        }
-        System.out.println("\n--- Wishlist ---");
-        Iterator<WishlistItem> it = wishlist.getItems();
-        while (it.hasNext()) {
-            Item item = it.next();
-            System.out.println(item);
-        }
-    }
-
     private void placeOrder() {
         Wishlist wishlist = currentClient.getWishlist();
         if (wishlist == null || !wishlist.getItems().hasNext()) {
@@ -162,7 +144,8 @@ public class ClientMenuState extends State {
                 System.out.print("Enter quantity to purchase (0 to skip): ");
                 int qty = Integer.parseInt(reader.readLine());
                 if (qty > 0) {
-                    InvoiceItem invoiceItem = warehouse.order(item.getProductId(), qty, currentClient.getId());
+                    InvoiceItem invoiceItem =
+                            warehouse.order(item.getProductId(), qty, currentClient.getId());
                     invoice.addItem(invoiceItem);
                     iterator.remove();
                 }
