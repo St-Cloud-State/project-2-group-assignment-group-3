@@ -18,6 +18,9 @@ public class ClientMenuState extends State {
     private static final int SHOW_TRANSACTIONS = 3;
     private static final int WISHLIST_FUNCTIONALITIES = 4;
     private static final int PLACE_ORDER = 5;
+
+    //Carson: Added new method part here.
+    private static final int ADD_FUNDS = 6;
     private static final int LOGOUT = 0;
 
     private ClientMenuState() {
@@ -31,7 +34,7 @@ public class ClientMenuState extends State {
     }
 
     public void run() {
-        ContextManager  ctx = ContextManager.instance();
+        ContextManager ctx = ContextManager.instance();
         String currentClientId = ctx.getSession().userId();
         currentClient = warehouse.searchClient(currentClientId);
         int command;
@@ -40,7 +43,6 @@ public class ClientMenuState extends State {
             showMenu();
             command = getCommand();
             switch (command) {
-                    //Options based on requirements.
                 case SHOW_DETAILS:
                     showClientDetails();
                     break;
@@ -51,19 +53,21 @@ public class ClientMenuState extends State {
                     showTransactions();
                     break;
                 case WISHLIST_FUNCTIONALITIES:
-                    // Enter wishlist sub-state
                     WishListFunctionSubState wishlistState =
-                            new WishListFunctionSubState(currentClient);
+                        new WishListFunctionSubState(currentClient);
                     wishlistState.run();
                     break;
                 case PLACE_ORDER:
                     placeOrder();
                     break;
+
+                    //Carson: Switch hjas been adjusted.
+                case ADD_FUNDS:
+                    addFunds();
+                    break;
                 case LOGOUT:
                     System.out.println("Logging out...");
                     break;
-
-                    //In case inputs aren't valid.
                 default:
                     System.out.println("Invalid choice.");
             }
@@ -78,6 +82,9 @@ public class ClientMenuState extends State {
         System.out.println(SHOW_TRANSACTIONS + " : View Transactions");
         System.out.println(WISHLIST_FUNCTIONALITIES + " : Wishlist Functionalities");
         System.out.println(PLACE_ORDER + " : Place an Order");
+
+        //Carson: Added for the new method.
+        System.out.println(ADD_FUNDS + " : Add Funds to Balance");   
         System.out.println(LOGOUT + " : Logout");
     }
 
@@ -145,7 +152,7 @@ public class ClientMenuState extends State {
                 int qty = Integer.parseInt(reader.readLine());
                 if (qty > 0) {
                     InvoiceItem invoiceItem =
-                            warehouse.order(item.getProductId(), qty, currentClient.getId());
+                        warehouse.order(item.getProductId(), qty, currentClient.getId());
                     invoice.addItem(invoiceItem);
                     iterator.remove();
                 }
@@ -157,5 +164,24 @@ public class ClientMenuState extends State {
         currentClient.getInvoices().insertItem(invoice);
         System.out.println("\n--- Order Summary ---");
         System.out.println(invoice.render());
+    }
+
+//Carson: Added my new method for PT 2 here.
+    private void addFunds() {
+        try {
+            System.out.print("Enter amount to add: ");
+            double amount = Double.parseDouble(reader.readLine());
+
+            if (amount <= 0) {
+                System.out.println("Amount must be greater than zero.");
+                return;
+            }
+
+            currentClient.addFunds(amount);
+            System.out.println("Successfully added $" + amount +
+                               ". New balance: $" + currentClient.getBalance());
+        } catch (IOException | NumberFormatException e) {
+            System.out.println("Invalid amount.");
+        }
     }
 }
