@@ -68,6 +68,11 @@ public class Client {
     public InvoiceList getInvoices() {
         return this.invoices;
     }
+    //Carson: Added for Proj2Pt2
+    public void addFunds(double amount) {
+    balance += amount;
+    }
+
 
     @Override
     public String toString() {
