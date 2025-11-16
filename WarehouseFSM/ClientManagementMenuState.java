@@ -1,9 +1,11 @@
 import javax.swing.*;
+
 import java.awt.*;
 import java.util.Iterator;
 
-public final class ClerkMenuState extends State {
-    private static ClerkMenuState instance;
+public class ClientManagementMenuState extends State {
+    private static ClientManagementMenuState instance;
+
     private static Warehouse warehouse;
 
     private JFrame frame;
@@ -11,16 +13,18 @@ public final class ClerkMenuState extends State {
     private JPanel contentPanel;
     private JLabel breadcrumbLabel;
 
-    private static final String CARD_PRODUCTS          = "PRODUCTS";
-    private static final String CARD_BECOME_CLIENT     = "BECOME_CLIENT";
+    private static final String CARD_ADD_CLIENT        = "ADD_CLIENT";
+    private static final String CARD_CLIENTS           = "CLIENTS";
+    private static final String CARD_CLIENTS_BALANCE   = "CLIENTS_BALANCE";
+    private static final String CARD_RECORD_PAYMENT    = "RECORD_PAYMENT";
 
-    private ClerkMenuState() {
+    private ClientManagementMenuState() {
         warehouse = Warehouse.instance();
     }
 
-    public static ClerkMenuState instance() {
-        if (instance == null) 
-            instance = new ClerkMenuState();
+    public static ClientManagementMenuState instance() {
+        if (instance == null)
+            instance = new ClientManagementMenuState();
         return instance;
     }
 
@@ -31,13 +35,13 @@ public final class ClerkMenuState extends State {
         root.removeAll();
         root.setLayout(new BorderLayout());
 
-        JPanel sidebar   = createSidebar();
-        JPanel mainArea  = createMainArea();
+        JPanel sidebar = createSidebar();
+        JPanel mainArea = createMainArea();
 
         root.add(sidebar, BorderLayout.WEST);
         root.add(mainArea, BorderLayout.CENTER);
 
-        showView("Display Products", CARD_PRODUCTS);
+        showView("Add Client", CARD_ADD_CLIENT);
 
         frame.revalidate();
         frame.repaint();
@@ -48,7 +52,6 @@ public final class ClerkMenuState extends State {
         sidebar.setPreferredSize(new Dimension(260, 0));
         sidebar.setBackground(new Color(18, 18, 18));
 
-        // top header
         JPanel header = new JPanel();
         header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
         header.setOpaque(false);
@@ -58,7 +61,7 @@ public final class ClerkMenuState extends State {
         appLabel.setForeground(Color.WHITE);
         appLabel.setFont(appLabel.getFont().deriveFont(Font.BOLD, 18f));
 
-        JLabel sectionLabel = new JLabel("Clerk");
+        JLabel sectionLabel = new JLabel("Client Management");
         sectionLabel.setForeground(new Color(180, 180, 180));
         sectionLabel.setFont(sectionLabel.getFont().deriveFont(13f));
 
@@ -71,21 +74,23 @@ public final class ClerkMenuState extends State {
         menu.setOpaque(false);
         menu.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 
-        menu.add(createSidebarButton("Products",
-                () -> showView("Display Products", CARD_PRODUCTS)));
-        menu.add(createSidebarButton("Manage Clients",
-                () -> ContextManager.instance().changeState(Enums.Transition.TO_CLIENT_MANAGEMENT)));
-        menu.add(createSidebarButton("Become Client",
-                () -> showView("Become Client", CARD_BECOME_CLIENT)));
+        menu.add(createSidebarButton("Add Client",
+                () -> showView("Add Client", CARD_ADD_CLIENT)));
+        menu.add(createSidebarButton("Clients",
+                () -> showView("Clients", CARD_CLIENTS)));
+        menu.add(createSidebarButton("Clients with Balance",
+                () -> showView("Clients with Balance", CARD_CLIENTS_BALANCE)));
+        menu.add(createSidebarButton("Record Payment",
+                () -> showView("Record Payment", CARD_RECORD_PAYMENT)));
 
-        JButton logoutBtn = new JButton("Logout");
-        logoutBtn.addActionListener(e ->
-                ContextManager.instance().handleLogout()
+        JButton backBtn = new JButton("Back");
+        backBtn.addActionListener(e ->
+                ContextManager.instance().back()
         );
         JPanel bottom = new JPanel(new BorderLayout());
         bottom.setOpaque(false);
         bottom.setBorder(BorderFactory.createEmptyBorder(8, 8, 16, 8));
-        bottom.add(logoutBtn, BorderLayout.SOUTH);
+        bottom.add(backBtn, BorderLayout.SOUTH);
 
         sidebar.add(header, BorderLayout.NORTH);
         sidebar.add(menu, BorderLayout.CENTER);
@@ -116,8 +121,10 @@ public final class ClerkMenuState extends State {
         contentPanel.setBackground(new Color(30, 30, 30));
         contentPanel.setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
 
-        contentPanel.add(createProductsPanel(),       CARD_PRODUCTS);
-        contentPanel.add(createBecomeClientPanel(),   CARD_BECOME_CLIENT);
+        contentPanel.add(createAddClientPanel(),      CARD_ADD_CLIENT);
+        contentPanel.add(createClientsPanel(false),   CARD_CLIENTS);
+        contentPanel.add(createClientsPanel(true),    CARD_CLIENTS_BALANCE);
+        contentPanel.add(createRecordPaymentPanel(),  CARD_RECORD_PAYMENT);
 
         main.add(breadcrumbLabel, BorderLayout.NORTH);
         main.add(contentPanel, BorderLayout.CENTER);
@@ -126,16 +133,77 @@ public final class ClerkMenuState extends State {
     }
 
     private void showView(String viewName, String cardId) {
-        breadcrumbLabel.setText("Clerk  >  " + viewName);
+        breadcrumbLabel.setText("Client Management  >  " + viewName);
         cardLayout.show(contentPanel, cardId);
     }
 
-    private JPanel createProductsPanel() {
+    private JPanel createAddClientPanel() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setOpaque(false);
+        GridBagConstraints gbc = baseGbc();
+
+        JLabel title = titleLabel("Add Client");
+        gbc.gridwidth = 2;
+        panel.add(title, gbc);
+
+        gbc.gridy++; gbc.gridwidth = 1;
+        JLabel nameLabel = fieldLabel("Name:");
+        panel.add(nameLabel, gbc);
+
+        JTextField nameField = new JTextField(20);
+        gbc.gridx = 1;
+        panel.add(nameField, gbc);
+
+        gbc.gridx = 0; gbc.gridy++;
+        JLabel addrLabel = fieldLabel("Address:");
+        panel.add(addrLabel, gbc);
+
+        JTextField addrField = new JTextField(20);
+        gbc.gridx = 1;
+        panel.add(addrField, gbc);
+
+        gbc.gridx = 0; gbc.gridy++;
+        gbc.gridwidth = 2;
+        JButton addBtn = new JButton("Add Client");
+        panel.add(addBtn, gbc);
+
+        addBtn.addActionListener(e -> {
+            String name = nameField.getText().trim();
+            String addr = addrField.getText().trim();
+
+            if (name.isEmpty() || addr.isEmpty()) {
+                JOptionPane.showMessageDialog(frame,
+                        "Name and address are required.",
+                        "Validation",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            Client client = warehouse.addClient(name, addr);
+            if (client != null) {
+                JOptionPane.showMessageDialog(frame,
+                        "Client added! ID: " + client.getId(),
+                        "Success",
+                        JOptionPane.INFORMATION_MESSAGE);
+                nameField.setText("");
+                addrField.setText("");
+            } else {
+                JOptionPane.showMessageDialog(frame,
+                        "Failed to add client.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        return panel;
+    }
+
+    private JPanel createClientsPanel(boolean onlyWithBalance) {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
         GridBagConstraints gbc = baseGbc();
     
-        JLabel title = titleLabel("Products");
+        JLabel title = titleLabel(onlyWithBalance ? "Clients with Balance" : "Clients");
         gbc.gridwidth = 2;
         panel.add(title, gbc);
     
@@ -152,7 +220,7 @@ public final class ClerkMenuState extends State {
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
     
-        String[] columns = {"ID", "Name", "Unit Price", "Quantity"};
+        String[] columns = {"ID", "Name", "Address", "Balance"};
         javax.swing.table.DefaultTableModel model =
                 new javax.swing.table.DefaultTableModel(columns, 0) {
                     @Override
@@ -183,38 +251,39 @@ public final class ClerkMenuState extends State {
         refreshBtn.addActionListener(e -> {
             model.setRowCount(0);
     
-            Iterator<Product> it = warehouse.getProducts();
+            Iterator<Client> it = onlyWithBalance
+                    ? warehouse.getClientsWithBalance()
+                    : warehouse.getClients();
+    
             if (it == null || !it.hasNext()) {
-                JOptionPane.showMessageDialog(
-                        frame,
-                        "No products found.",
+                JOptionPane.showMessageDialog(frame,
+                        "No clients found.",
                         "Info",
-                        JOptionPane.INFORMATION_MESSAGE
-                );
+                        JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
     
             while (it.hasNext()) {
-                Product p = it.next();
+                Client c = it.next();
                 Object[] row = {
-                        p.getId(),
-                        p.getName(),
-                        String.format("$%.2f", p.getSalePrice()),
-                        p.getAmount()
+                        c.getId(),
+                        c.getName(),
+                        c.getAddress(),
+                        String.format("$%.2f", c.getBalance())
                 };
                 model.addRow(row);
             }
         });
     
         return panel;
-    }    
+    }
 
-    private JPanel createBecomeClientPanel() {
+    private JPanel createRecordPaymentPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
         GridBagConstraints gbc = baseGbc();
 
-        JLabel title = titleLabel("Become Client");
+        JLabel title = titleLabel("Record Payment");
         gbc.gridwidth = 2;
         panel.add(title, gbc);
 
@@ -227,28 +296,41 @@ public final class ClerkMenuState extends State {
         panel.add(idField, gbc);
 
         gbc.gridx = 0; gbc.gridy++;
-        gbc.gridwidth = 2;
-        JButton becomeBtn = new JButton("Switch to Client View");
-        panel.add(becomeBtn, gbc);
+        JLabel amtLabel = fieldLabel("Payment Amount:");
+        panel.add(amtLabel, gbc);
 
-        becomeBtn.addActionListener(e -> {
+        JTextField amtField = new JTextField(10);
+        gbc.gridx = 1;
+        panel.add(amtField, gbc);
+
+        gbc.gridx = 0; gbc.gridy++;
+        gbc.gridwidth = 2;
+        JButton recordBtn = new JButton("Record Payment");
+        panel.add(recordBtn, gbc);
+
+        recordBtn.addActionListener(e -> {
             String clientId = idField.getText().trim();
-            if (clientId.isEmpty()) {
+            String amtText  = amtField.getText().trim();
+
+            if (clientId.isEmpty() || amtText.isEmpty()) {
                 JOptionPane.showMessageDialog(frame,
-                        "Enter a client ID.",
+                        "All fields are required.",
                         "Validation",
                         JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
-            if (warehouse.searchClient(clientId) != null) {
-                ContextManager ctx = ContextManager.instance();
-                ctx.addSession(new Session(Enums.State.CLIENT, clientId));
-                ctx.changeState(Enums.Transition.TO_CLIENT);
-            } else {
+            try {
+                float amount = Float.parseFloat(amtText);
+                warehouse.receivePayment(clientId, amount);
                 JOptionPane.showMessageDialog(frame,
-                        "Client not found.",
-                        "Error",
+                        "Payment recorded.",
+                        "Success",
+                        JOptionPane.INFORMATION_MESSAGE);
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(frame,
+                        "Amount must be a number.",
+                        "Input Error",
                         JOptionPane.ERROR_MESSAGE);
             }
         });

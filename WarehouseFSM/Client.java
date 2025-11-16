@@ -4,7 +4,6 @@
 // File: Client.java
 // Purpose: This class contains all information pertaining to each user. 
 
-import java.util.ArrayList;
 import java.util.UUID; 
 
 public class Client {

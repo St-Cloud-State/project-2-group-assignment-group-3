@@ -3,7 +3,8 @@ public class Enums {
         CLIENT(0),
         CLERK(1),
         MANAGER(2),
-        LOGIN(3);
+        CLIENT_MANAGEMENT(3),
+        LOGIN(4);
 
         private final int idx;
 
@@ -20,7 +21,8 @@ public class Enums {
         TO_CLIENT(0),
         TO_CLERK(1),
         TO_MANAGER(2),
-        TO_LOGIN(3),
+        TO_CLIENT_MANAGEMENT(3),
+        TO_LOGIN(4),
         CLEAN_EXIT(-1),
         ERROR_EXIT(-2);
 

@@ -93,84 +93,81 @@ public class Warehouse {
         return response;
     }
 
- public String receiveShipment(String productId, int shipmentQuantity) {
-    Product product = this.searchProduct(productId);
-    if (product == null) {
-        return "Product not found.";
-    }
+    public String receiveShipment(String productId, int shipmentQuantity) {
+        Product product = this.searchProduct(productId);
+        if (product == null) {
+            return "Product not found.";
+        }
+
+        
+        System.out.println("Current stock for product '" + product.getName() + "' (ID: " 
+            + product.getId() + "): " + product.getAmount() + " units.");
+
+        System.out.println("Incoming shipment quantity: " + shipmentQuantity + " units.");
 
     
-    System.out.println("Current stock for product '" + product.getName() + "' (ID: " 
-        + product.getId() + "): " + product.getAmount() + " units.");
+        product.updateQuantity(shipmentQuantity);
 
-    System.out.println("Incoming shipment quantity: " + shipmentQuantity + " units.");
+        Waitlist waitlist = product.getWaitlist();
+        if (waitlist != null) {
+            Iterator<WaitlistItem> iterator = waitlist.getItems();
+            ArrayList<WaitlistItem> toRemove = new ArrayList<>();
 
-   
-    product.updateQuantity(shipmentQuantity);
+            while (iterator.hasNext() && shipmentQuantity > 0) {
+                WaitlistItem item = iterator.next();
+                int requestedQty = item.getQuantity();
+                String clientId = item.getClientId();
+                Client client = searchClient(clientId); // Get client once here
 
-    Waitlist waitlist = product.getWaitlist();
-    if (waitlist != null) {
-        Iterator<WaitlistItem> iterator = waitlist.getItems();
-        ArrayList<WaitlistItem> toRemove = new ArrayList<>();
+                if (client == null) continue; // safety
 
-        while (iterator.hasNext() && shipmentQuantity > 0) {
-            WaitlistItem item = iterator.next();
-            int requestedQty = item.getQuantity();
-            String clientId = item.getClientId();
-            Client client = searchClient(clientId); // Get client once here
+                if (requestedQty <= shipmentQuantity) {
+                    // Full fulfillment
+                    InvoiceItem invoiceItem = order(productId, requestedQty, clientId);
+                    shipmentQuantity -= requestedQty;
+                    toRemove.add(item);
 
-            if (client == null) continue; // safety
+                    // 🔹 Create and attach invoice
+                    if (invoiceItem != null) {
+                        Invoice invoice = new Invoice(clientId);
+                        invoice.addItem(invoiceItem);
+                        client.getInvoices().insertItem(invoice);
+                        System.out.println("Invoice created for client " + client.getName() +
+                                        " for " + requestedQty + " units of " + product.getName() + ".");
+                    }
 
-            if (requestedQty <= shipmentQuantity) {
-                // Full fulfillment
-                InvoiceItem invoiceItem = order(productId, requestedQty, clientId);
-                shipmentQuantity -= requestedQty;
-                toRemove.add(item);
+                } else if (shipmentQuantity > 0) {
+                    // Partial fulfillment
+                    InvoiceItem invoiceItem = order(productId, shipmentQuantity, clientId);
 
-                // 🔹 Create and attach invoice
-                if (invoiceItem != null) {
-                    Invoice invoice = new Invoice(clientId);
-                    invoice.addItem(invoiceItem);
-                    client.getInvoices().insertItem(invoice);
-                    System.out.println("Invoice created for client " + client.getName() +
-                                       " for " + requestedQty + " units of " + product.getName() + ".");
+                    if (invoiceItem != null) {
+                        Invoice invoice = new Invoice(clientId);
+                        invoice.addItem(invoiceItem);
+                        client.getInvoices().insertItem(invoice);
+                        System.out.println("Partial invoice created for client " + client.getName() +
+                                        " for " + shipmentQuantity + " units of " + product.getName() + ".");
+                    }
+
+                    item.setQuantity(requestedQty - shipmentQuantity);
+                    shipmentQuantity = 0; // used all available stock
                 }
+            }
 
-            } else if (shipmentQuantity > 0) {
-                // Partial fulfillment
-                InvoiceItem invoiceItem = order(productId, shipmentQuantity, clientId);
-
-                if (invoiceItem != null) {
-                    Invoice invoice = new Invoice(clientId);
-                    invoice.addItem(invoiceItem);
-                    client.getInvoices().insertItem(invoice);
-                    System.out.println("Partial invoice created for client " + client.getName() +
-                                       " for " + shipmentQuantity + " units of " + product.getName() + ".");
-                }
-
-                item.setQuantity(requestedQty - shipmentQuantity);
-                shipmentQuantity = 0; // used all available stock
+            // Remove fully fulfilled waitlist items
+            for (WaitlistItem item : toRemove) {
+                waitlist.removeItem(item);
             }
         }
 
-        // Remove fully fulfilled waitlist items
-        for (WaitlistItem item : toRemove) {
-            waitlist.removeItem(item);
+            if (shipmentQuantity > 0) {
+            System.out.println("Remaining " + shipmentQuantity +
+        " units of '" + product.getName() + "' added to inventory after waitlist processing.");
+        } else {
+            System.out.println("All product quantity used to fulfill waitlists.");
         }
+
+        return "Shipment processed successfully. Stock of the current product: " + product.getAmount();
     }
-
-        if (shipmentQuantity > 0) {
-        System.out.println("Remaining " + shipmentQuantity +
-    " units of '" + product.getName() + "' added to inventory after waitlist processing.");
-    } else {
-        System.out.println("All product quantity used to fulfill waitlists.");
-    }
-
-    return "Shipment processed successfully. Stock of the current product: " + product.getAmount();
-}
-
-
-
 
     public Waitlist getWaitlist(String productId) {
         Product product = this.searchProduct(productId);
@@ -225,16 +222,16 @@ public class Warehouse {
         return client.getInvoices();
     }
 
-        public Iterator<Client> getClientsWithBalance() {
+    public Iterator<Client> getClientsWithBalance() {
         Iterator<Client> iterator = this.getClients();
         ArrayList<Client> clientsWithBalance = new ArrayList<Client>();
         while (iterator.hasNext()) {
             Client curClient = iterator.next();
             if (curClient.getBalance() > 0) {
-                System.out.println("here");
                 clientsWithBalance.add(curClient);
             }
         }
+
         return clientsWithBalance.iterator();
     }
     

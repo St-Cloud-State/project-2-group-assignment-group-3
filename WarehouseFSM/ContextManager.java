@@ -5,10 +5,15 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.StringTokenizer;
 
+import javax.swing.JFrame;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+
 record Session(Enums.State state, String userId) {}
 
 public class ContextManager {
     private static ContextManager context;
+    private static JFrame uiFrame;
     private static Enums.State currentState = Enums.State.LOGIN;
     private final Deque<Session> sessionStack = new ArrayDeque<>();
     private BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
@@ -39,38 +44,67 @@ public class ContextManager {
         return this.sessionStack.peek();
     }
 
+    public JFrame getFrame() {
+        return uiFrame;
+    }
+
     private ContextManager() {
-        states = new State[4];
-        nextState = new int[4][4];
+        states = new State[5];
+        nextState = new int[5][5];
 
         states[Enums.State.CLIENT.idx()] = ClientMenuState.instance();
         states[Enums.State.CLERK.idx()] = ClerkMenuState.instance();
         states[Enums.State.MANAGER.idx()] = ManagerMenuState.instance();
+        states[Enums.State.CLIENT_MANAGEMENT.idx()] = ClientManagementMenuState.instance();
         states[Enums.State.LOGIN.idx()] = LoginState.instance();
 
         // Client transitions
         nextState[Enums.State.CLIENT.idx()][Enums.Transition.TO_CLIENT.code()] = Enums.Transition.ERROR_EXIT.code();
         nextState[Enums.State.CLIENT.idx()][Enums.Transition.TO_CLERK.code()] = Enums.Transition.ERROR_EXIT.code();
         nextState[Enums.State.CLIENT.idx()][Enums.Transition.TO_MANAGER.code()] = Enums.Transition.ERROR_EXIT.code();
+        nextState[Enums.State.CLIENT.idx()][Enums.Transition.TO_CLIENT_MANAGEMENT.code()] = Enums.Transition.ERROR_EXIT.code();
         nextState[Enums.State.CLIENT.idx()][Enums.Transition.TO_LOGIN.code()] = Enums.State.LOGIN.idx();
 
         // Clerk transitions
         nextState[Enums.State.CLERK.idx()][Enums.Transition.TO_CLIENT.code()] = Enums.State.CLIENT.idx();
         nextState[Enums.State.CLERK.idx()][Enums.Transition.TO_CLERK.code()] = Enums.Transition.ERROR_EXIT.code();
         nextState[Enums.State.CLERK.idx()][Enums.Transition.TO_MANAGER.code()] = Enums.Transition.ERROR_EXIT.code();
+        nextState[Enums.State.CLERK.idx()][Enums.Transition.TO_CLIENT_MANAGEMENT.code()] = Enums.State.CLIENT_MANAGEMENT.idx();
         nextState[Enums.State.CLERK.idx()][Enums.Transition.TO_LOGIN.code()] = Enums.State.LOGIN.idx();
 
         // Manager transitions
         nextState[Enums.State.MANAGER.idx()][Enums.Transition.TO_CLIENT.code()] = Enums.Transition.ERROR_EXIT.code();
         nextState[Enums.State.MANAGER.idx()][Enums.Transition.TO_CLERK.code()] = Enums.State.CLERK.idx();
         nextState[Enums.State.MANAGER.idx()][Enums.Transition.TO_MANAGER.code()] = Enums.Transition.ERROR_EXIT.code();
+        nextState[Enums.State.MANAGER.idx()][Enums.Transition.TO_CLIENT_MANAGEMENT.code()] = Enums.Transition.ERROR_EXIT.code();
         nextState[Enums.State.MANAGER.idx()][Enums.Transition.TO_LOGIN.code()] = Enums.State.LOGIN.idx();
 
+        // Client Management transistions
+        nextState[Enums.State.CLIENT_MANAGEMENT.idx()][Enums.Transition.TO_CLIENT.code()] = Enums.Transition.ERROR_EXIT.code();
+        nextState[Enums.State.CLIENT_MANAGEMENT.idx()][Enums.Transition.TO_CLERK.code()] = Enums.Transition.ERROR_EXIT.code();
+        nextState[Enums.State.CLIENT_MANAGEMENT.idx()][Enums.Transition.TO_MANAGER.code()] = Enums.Transition.ERROR_EXIT.code();
+        nextState[Enums.State.CLIENT_MANAGEMENT.idx()][Enums.Transition.TO_CLIENT_MANAGEMENT.code()] = Enums.Transition.ERROR_EXIT.code();
+        nextState[Enums.State.CLIENT_MANAGEMENT.idx()][Enums.Transition.TO_LOGIN.code()] = Enums.Transition.ERROR_EXIT.code();
+        
         // Login transitions
         nextState[Enums.State.LOGIN.idx()][Enums.Transition.TO_CLIENT.code()] = Enums.State.CLIENT.idx();
         nextState[Enums.State.LOGIN.idx()][Enums.Transition.TO_CLERK.code()] = Enums.State.CLERK.idx();
         nextState[Enums.State.LOGIN.idx()][Enums.Transition.TO_MANAGER.code()] = Enums.State.MANAGER.idx();
+        nextState[Enums.State.LOGIN.idx()][Enums.Transition.TO_CLIENT_MANAGEMENT.code()] = Enums.Transition.ERROR_EXIT.code();
         nextState[Enums.State.LOGIN.idx()][Enums.Transition.TO_LOGIN.code()] = Enums.Transition.ERROR_EXIT.code();
+
+        uiFrame = new JFrame("Warehouse System GUI");
+        uiFrame.addWindowListener(
+            new WindowAdapter() {
+                public void windowClosing(WindowEvent e) {
+                    System.exit(0);
+                }
+            }
+        );
+
+        uiFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        uiFrame.setVisible(true);
+
     }
 
     public void changeState(Enums.Transition transition) {
@@ -126,6 +160,17 @@ public class ContextManager {
         }
     }
 
+    public void back() {
+        final Session session = sessionStack.peek();
+
+        if (session != null) {
+            currentState = session.state();
+            states[currentState.idx()].run();
+        } else {
+            changeState(Enums.Transition.TO_LOGIN);
+        }
+    }
+
     private void terminate() {
         System.out.println(" Goodbye \n ");
         System.exit(0);
@@ -134,7 +179,6 @@ public class ContextManager {
 
     public static ContextManager instance() {
         if (context == null) {
-            System.out.println("Calling constructor");
             context = new ContextManager();
         }
         return context;
