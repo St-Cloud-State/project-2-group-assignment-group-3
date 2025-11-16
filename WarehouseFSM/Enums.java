@@ -1,3 +1,4 @@
+package WarehouseFSM;
 public class Enums {
     public enum State {
         CLIENT(0),

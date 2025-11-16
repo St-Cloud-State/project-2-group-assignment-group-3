@@ -1,3 +1,4 @@
+package WarehouseFSM;
 // Name: Sohaib Akram
 // Group 3
 // StarID: ho7246ag

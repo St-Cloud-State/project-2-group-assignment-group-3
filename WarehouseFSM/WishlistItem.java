@@ -1,3 +1,4 @@
+package WarehouseFSM;
 public class WishlistItem extends Item {
     private String productId;
 

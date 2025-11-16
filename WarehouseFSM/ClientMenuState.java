@@ -1,3 +1,4 @@
+package WarehouseFSM;
 // Name: Carson Stallcup
 // Group: 3
 // File: ClientMenuState.java

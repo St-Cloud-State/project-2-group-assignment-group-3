@@ -1,3 +1,4 @@
+package WarehouseFSM;
 import java.util.Scanner;
 
 public final class LoginState extends State {

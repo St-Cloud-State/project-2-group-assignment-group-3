@@ -1,3 +1,4 @@
+package WarehouseFSM;
 public class WaitlistItem extends Item {
     private String clientId;
 

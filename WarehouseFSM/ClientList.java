@@ -1,3 +1,4 @@
+package WarehouseFSM;
 // Name: Carson Stallcup
 // StarID: po1278cm
 // Group 3

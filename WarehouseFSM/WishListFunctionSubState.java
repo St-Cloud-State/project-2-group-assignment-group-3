@@ -1,10 +1,12 @@
+package WarehouseFSM;
 // Name: Carson Stallcup
 // Group: 3
 // File: WishListFunctionSubState.java
 // Purpose: Sub-state for client wishlist operations.
 
 import java.io.*;
-import java.util.*;
+import java.util.Iterator;
+import java.util.Map;
 
 public class WishListFunctionSubState {
 

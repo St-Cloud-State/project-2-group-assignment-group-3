@@ -1,3 +1,4 @@
+package WarehouseFSM;
 public class InvoiceItem {
     private int quantity;
     private String productName;

@@ -1,3 +1,4 @@
+package WarehouseFSM;
 public class State {
     protected static State instance() {
         return new State();

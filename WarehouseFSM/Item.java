@@ -1,3 +1,4 @@
+package WarehouseFSM;
 public class Item {
     protected int quantity;
 

@@ -1,3 +1,4 @@
+package WarehouseFSM;
 // Name: Sohaib Akram
 // Group 3
 // Purpose: This class contains many products.  It can get, 
